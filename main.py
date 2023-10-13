@@ -1,46 +1,31 @@
 from flask import *
-#from flaskext.mysql import MySQL
+import mysql.connector
 import re
+
 app = Flask(__name__)
 app.secret_key = 'sjhuefbyuUGgyt3874'
-import mysql.connector
-
 mysql_config = {
-   'host': 'localhost',
-   'user': 'root',
-   'password': 'maitreyi@1304',
-   'database': 'dbmsproject' 
+    'host': 'localhost',
+    'user': 'root',
+    'password': 'MacbookAirm1',
+    'database': 'dbmsproject'
 }
-
-# app.config['MYSQL_DATABASE_HOST'] = 'localhost'
-# app.config['MYSQL_DATABASE_USER'] = 'root'
-# app.config['MYSQL_DATABASE_PASSWORD'] = 'maitreyi@1304'
-# app.config['MYSQL_DATABASE_DB'] = 'dbmsproject'
-
-# mysql = MySQL()
-# mysql.init_app(app)
 
 @app.route('/login/<user_type>')
 def login(user_type):
     msg = ""
-    # print(request.args.get("username"),request.args.get("password"))
-    print(user_type)
-
-    if (request.args.get("username")):
+    if request.args.get("username"):
         username = request.args.get("username")
         password = request.args.get("password")
+        conn = mysql.connector.connect(**mysql_config)
+        cursor = conn.cursor()
 
-        # cursor = mysql.get_db().cursor()
-        # cursor.execute(f'select * from {user_type} where {user_type[0]}_id = "{username}" and password = "{password}";')
-        # account = cursor.fetchone()
-        # cursor.close()
+        query = f'select * from {user_type} where {user_type[0]}_id = %s and password = %s'
+        cursor.execute(query, (username, password))
 
-        connection = mysql.connector.connect(**mysql_config)
-        cursor = connection.cursor()
-        cursor.execute(f'select * from {user_type} where {user_type[0]}_id = "{username}" and password = "{password}";')
         account = cursor.fetchone()
         cursor.close()
-        connection.close()
+        conn.close()
 
         if account:
             session['loggedin'] = True
@@ -50,16 +35,73 @@ def login(user_type):
         else:
             msg = 'Incorrect username or password.'
 
-    return render_template(f"log_{user_type[:3]}.html", msg = msg)
-
+    return render_template(f"log_{user_type[:3]}.html", msg=msg)
 
 @app.route("/home/<user_type>/<user_name>")
-def home_pat(user_type, user_name):
+def home(user_type, user_name):
     if "loggedin" in session:
-        return render_template(f"home_{user_type[:3]}.html", name = user_name)
+        return render_template(f"home_{user_type[:3]}.html", type1=user_type,name=user_name)
     else:
         return redirect(f"/login/{user_type}")
-    
+
+@app.route("/home/<user_type>/<user_name>/activeAppointments")
+def doc_appt(user_type, user_name):
+    if "loggedin" in session:
+        conn = mysql.connector.connect(**mysql_config)
+        cursor = conn.cursor()
+        if user_type == "doctor":
+            doctor_id = session['id']
+            if doctor_id:
+                query = "SELECT A_ID,date,scheduled_appointments.P_ID,name,age,start_time FROM patient,scheduled_appointments WHERE scheduled_appointments.P_ID=patient.p_id and scheduled_appointments.status = 'Scheduled' AND scheduled_appointments.D_ID = %s"
+                cursor.execute(query, (doctor_id,))
+                appointments = cursor.fetchall()
+                aid = appointments[0]
+                conn.close()
+                return render_template("doctor_appointments.html", aid=aid,user_type=user_type,user_name=user_name, appointments=appointments)
+            else:
+                return "Invalid doctor ID" 
+        else:
+            return "Invalid user type" 
+    else:
+        return redirect(f"/login/{user_type}")
+@app.route("/home/<user_type>/<user_name>/activeAppointments/Prescription/<aid>")
+def doc_appt(user_type, user_name):
+    if "loggedin" in session:
+        conn = mysql.connector.connect(**mysql_config)
+        cursor = conn.cursor()
+        if user_type == "doctor":
+            doctor_id = session['id']
+            if doctor_id:
+                query = "SELECT A_ID,date,scheduled_appointments.P_ID,name,age,start_time FROM patient,scheduled_appointments WHERE scheduled_appointments.P_ID=patient.p_id and scheduled_appointments.status = 'Scheduled' AND scheduled_appointments.D_ID = %s"
+                cursor.execute(query, (doctor_id,))
+                appointments = cursor.fetchall()
+                aid = appointments[0]
+                conn.close()
+                return render_template("doctor_appointments.html", user_type=user_type,user_name=user_name, appointments=appointments)
+            else:
+                return "Invalid doctor ID" 
+        else:
+            return "Invalid user type" 
+    else:
+        return redirect(f"/login/{user_type}")
+@app.route("/home/<user_type>/<user_name>/patientMedicalHistory")
+def med_hist(user_type, user_name):
+    if "loggedin" in session:
+        if request.args.get("ptid"):
+            ptid = request.args.get("ptid")
+            conn = mysql.connector.connect(**mysql_config)
+            cursor = conn.cursor()
+            query = "SELECT name, date, health_condition, treatment, type FROM patient, medical_history WHERE medical_history.P_ID = %s and patient.p_id = %s"
+            cursor.execute(query, (ptid, ptid))
+            history = cursor.fetchall()
+            conn.close()
+            if history:
+                return render_template("med_history.html", user_type=user_type,user_name=user_name, history=history)
+        return render_template("med_history.html", user_type=user_type,user_name=user_name, history=[])
+
+    else:
+        return redirect(f"/login/{user_type}")
+
 @app.route("/logout/<user_type>")
 def logout(user_type):
     if "loggedin" in session:
@@ -69,10 +111,5 @@ def logout(user_type):
     return redirect(f'/login/patient')
 
 if __name__ == "__main__":
-    app.run(host="localhost", port=int("5000"), debug = True)
+    app.run( debug=True)
     print("Server up and running at port 5000")
-
-
-
-#fix alignment of error message in home_doc
-#add buttons to go to other login portals.
