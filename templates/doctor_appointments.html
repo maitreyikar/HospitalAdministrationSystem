@@ -16,7 +16,7 @@
             height: 100vh;
         }
         #content {
-            background: rgba(21, 14, 60, 0.5);
+            background: rgba(21, 14, 60, 0.7);
             width: 80%;
             text-align: center;
             padding: 20px;
@@ -38,7 +38,7 @@
             background-color: #0077b6;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             cursor: pointer;
             margin: 5px;
         }
@@ -46,10 +46,13 @@
             width: 100%;
             margin-top: 20px;
             border-collapse: collapse;
+            border-radius: 10px;
+            
         }
         th, td {
             padding: 10px;
             text-align: left;
+            
         }
         th {
             background-color: #4CAF50;
@@ -60,6 +63,7 @@
         }
         h1 {
             color: white;
+            
         }
     </style>
 </head>
@@ -84,7 +88,7 @@
                 <td>{{ appointment[3] }}</td>
                 <td>{{ appointment[4] }}</td>
                 <td>{{ appointment[5] }}</td>
-                <td><a href="/home/{{ user_type }}/{{ user_name }}/activeAppointments/Prescription/{{aid}}" class="button">Fill Prescription</a>
+                <td><a href="/home/{{ user_type }}/{{ user_name }}/activeAppointments/Prescription/{{appointment[0]}}" class="button">Fill Prescription</a>
                 </td>
             </tr>
             {% endfor %}

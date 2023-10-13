@@ -55,9 +55,8 @@ def doc_appt(user_type, user_name):
                 query = "SELECT A_ID,date,scheduled_appointments.P_ID,name,age,start_time FROM patient,scheduled_appointments WHERE scheduled_appointments.P_ID=patient.p_id and scheduled_appointments.status = 'Scheduled' AND scheduled_appointments.D_ID = %s"
                 cursor.execute(query, (doctor_id,))
                 appointments = cursor.fetchall()
-                aid = appointments[0]
                 conn.close()
-                return render_template("doctor_appointments.html", aid=aid,user_type=user_type,user_name=user_name, appointments=appointments)
+                return render_template("doctor_appointments.html",user_type=user_type,user_name=user_name, appointments=appointments)
             else:
                 return "Invalid doctor ID" 
         else:
@@ -65,25 +64,45 @@ def doc_appt(user_type, user_name):
     else:
         return redirect(f"/login/{user_type}")
 @app.route("/home/<user_type>/<user_name>/activeAppointments/Prescription/<aid>")
-def doc_appt(user_type, user_name):
+def prescrip(user_type, user_name, aid):
     if "loggedin" in session:
-        conn = mysql.connector.connect(**mysql_config)
-        cursor = conn.cursor()
         if user_type == "doctor":
             doctor_id = session['id']
             if doctor_id:
-                query = "SELECT A_ID,date,scheduled_appointments.P_ID,name,age,start_time FROM patient,scheduled_appointments WHERE scheduled_appointments.P_ID=patient.p_id and scheduled_appointments.status = 'Scheduled' AND scheduled_appointments.D_ID = %s"
-                cursor.execute(query, (doctor_id,))
-                appointments = cursor.fetchall()
-                aid = appointments[0]
-                conn.close()
-                return render_template("doctor_appointments.html", user_type=user_type,user_name=user_name, appointments=appointments)
+                return render_template("prescription.html", a_id=aid,user_type=user_type,user_name=user_name)
             else:
                 return "Invalid doctor ID" 
         else:
             return "Invalid user type" 
     else:
         return redirect(f"/login/{user_type}")
+    
+@app.route("/home/<user_type>/<user_name>/activeAppointments/Prescription/<aid>/submit", methods=["POST"])
+def submit(user_type, user_name, aid):
+    if "loggedin" in session:
+        conn = mysql.connector.connect(**mysql_config)
+        cursor = conn.cursor()
+        if user_type == "doctor":
+            doctor_id = session['id']
+            if doctor_id:
+                if request.method == "POST":
+                    symptoms = request.form["symptoms"]
+                    diagnosis = request.form["diagnosis"]
+                    prescription = request.form["prescription"]
+                    query1 = "UPDATE Scheduled_Appointments SET status = 'Completed' WHERE A_ID = %s"
+                    cursor.execute(query1, (aid,))
+                    query2 = "INSERT INTO Appointment_Summary (A_ID, Symptoms, Diagnosis, Prescription) VALUES (%s, %s, %s, %s)"
+                    cursor.execute(query2, (aid, symptoms, diagnosis, prescription))
+                    conn.commit()
+                    conn.close()
+                    return redirect(f"/home/{user_type}/{user_name}")
+            else:
+                return "Invalid doctor ID"
+        else:
+            return "Invalid user type"
+    else:
+        return redirect(f"/login/{user_type}")
+
 @app.route("/home/<user_type>/<user_name>/patientMedicalHistory")
 def med_hist(user_type, user_name):
     if "loggedin" in session:
