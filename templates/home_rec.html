@@ -1,0 +1,79 @@
+<html>
+    <head>
+        <title>Login</title>
+        <style>
+            html{
+                background: linear-gradient(to bottom right, #39a0ed 0%, #36f1cd 100%);
+                font-size: 2ch;
+                font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif
+            }
+            body{
+                margin: 0px;
+            }
+            #content{
+                background: rgba(21, 14, 60, 0.5);
+                margin: 50px;
+                height: 85%;
+                width: 93%;
+                border-radius: 10px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-evenly;
+            }
+            #options{
+                height: 35%;
+                width: 100%;
+                display: flex;
+                flex-direction: row;
+                justify-content: space-evenly;
+            }
+            #logout{
+                height: 20%;
+                width: 100%;
+            }
+            #options > form{
+                width: 30%;
+                height: 70%;
+            }
+            #logout > center > form{
+                width: 10%;
+                height: 60%;
+            }
+            #btn{
+                background-color: #1b435a;
+                width: 100%;
+                height: 100%;
+                border-radius: 7px;
+                border: 0px;
+                white-space: normal;
+                color: white;
+            }
+            h1{
+                color: white;
+            }
+            #welc{
+                height: 25%;
+            }
+        </style>
+    </head>
+    <body>
+        <div id = "content">
+            <div id="welc"><center><h1>Welcome, {{name}}!</h1></center></div>
+            <div id = "options">
+                <form action = "/scheduledAppointments" method = "GET">
+                    <input id = "btn" type = "submit" value = "Scheduled Appointments"/>
+                </form>
+                <form action = "/requestedAppointments" method = "GET">
+                    <input id = "btn" type = "submit" value = "Requested Appointments"/>
+                </form>
+            </div>
+            <div id = "logout">
+                <center>
+                    <form action = "/logout/receptionist">
+                        <input id = "btn" type = "submit" value = "LOGOUT"/>
+                    </form>
+                </center>
+            </div>
+        </div>
+    </body>
+</html>
