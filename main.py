@@ -56,7 +56,22 @@ def login(user_type):
 @app.route("/home/<user_type>/<user_name>")
 def home_pat(user_type, user_name):
     if "loggedin" in session:
-        return render_template(f"home_{user_type[:3]}.html", name = user_name)
+        return render_template(f"home_{user_type[:3]}.html", type = user_type, name = user_name)
+    else:
+        return redirect(f"/login/{user_type}")
+    
+@app.route("/home/<user_type>/<user_name>/requestAppointment")
+def requestAppointment(user_type, user_name):
+    if "loggedin" in session:
+
+        connection = mysql.connector.connect(**mysql_config)
+        cursor = connection.cursor()
+        cursor.execute(f'select distinct Department from Doctor;')
+        departments = cursor.fetchall()
+        cursor.close()
+        connection.close()
+
+        return render_template(f"request_appt.html", type = user_type, name = user_name, departments = departments)
     else:
         return redirect(f"/login/{user_type}")
     
