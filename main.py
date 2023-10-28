@@ -12,13 +12,6 @@ mysql_config = {
    'database': 'dbmsproject' 
 }
 
-# app.config['MYSQL_DATABASE_HOST'] = 'localhost'
-# app.config['MYSQL_DATABASE_USER'] = 'root'
-# app.config['MYSQL_DATABASE_PASSWORD'] = 'maitreyi@1304'
-# app.config['MYSQL_DATABASE_DB'] = 'dbmsproject'
-
-# mysql = MySQL()
-# mysql.init_app(app)
 
 @app.route('/login/<user_type>')
 def login(user_type):
@@ -29,11 +22,6 @@ def login(user_type):
     if (request.args.get("username")):
         username = request.args.get("username")
         password = request.args.get("password")
-
-        # cursor = mysql.get_db().cursor()
-        # cursor.execute(f'select * from {user_type} where {user_type[0]}_id = "{username}" and password = "{password}";')
-        # account = cursor.fetchone()
-        # cursor.close()
 
         connection = mysql.connector.connect(**mysql_config)
         cursor = connection.cursor()
@@ -71,10 +59,73 @@ def requestAppointment(user_type, user_name):
         cursor.close()
         connection.close()
 
-        return render_template(f"request_appt.html", type = user_type, name = user_name, departments = departments)
+        return render_template(f"request_appt.html", user_type = user_type, user_name = user_name, departments = departments)
     else:
         return redirect(f"/login/{user_type}")
     
+@app.route("/home/<user_type>/<user_name>/requestAppointment/<dept>")
+def reqAppointmentDept(user_type, user_name, dept):
+    if "loggedin" in session:
+
+        connection = mysql.connector.connect(**mysql_config)
+        cursor = connection.cursor()
+        cursor.execute(f'select D_ID, Name from Doctor where Department = "{dept}";')
+        doctors = cursor.fetchall()
+        cursor.close()
+        connection.close()
+
+        return render_template(f"request_appt_dept.html", user_type = user_type, user_name = user_name, dept = dept, doctors = doctors)
+    else:
+        return redirect(f"/login/{user_type}")
+    
+
+@app.route("/home/<user_type>/<user_name>/requestAppointment/<dept>/<doc_id>")
+def reqAppointmentDoc(user_type, user_name, dept, doc_id):
+    if "loggedin" in session:
+
+        connection = mysql.connector.connect(**mysql_config)
+        cursor = connection.cursor()
+        cursor.execute(f'insert into Requested_Appointment value("{session["id"]}", "{doc_id}");')
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+        return redirect(f"/home/patient/{user_name}")
+    else:
+        return redirect(f"/login/{user_type}")
+    
+@app.route("/home/<user_type>/<user_name>/appointmentHistory")
+def apptHistory(user_type, user_name):
+    if "loggedin" in session:
+
+        connection = mysql.connector.connect(**mysql_config)
+        cursor = connection.cursor()
+        cursor.execute(f'select d.Name, s.Date, s.Start_time, s.End_time from Doctor d natural join Scheduled_Appointments s where s.P_ID = "{session["id"]}" and s.Status = "Scheduled";')
+        upcoming = cursor.fetchall()
+        cursor.execute(f'select s.A_ID, d.Name, s.Date from Doctor d natural join Scheduled_Appointments s where s.P_ID = "{session["id"]}" and s.Status = "Completed";')
+        past = cursor.fetchall()
+        cursor.close()
+        connection.close()
+
+        return render_template(f"appt_History.html", type = user_type, name = user_name, upcoming = upcoming, past = past)
+    else:
+        return redirect(f"/login/{user_type}")
+    
+@app.route("/home/<user_type>/<user_name>/appointmentHistory/<a_id>")
+def apptSummary(user_type, user_name, a_id):
+    if "loggedin" in session:
+
+        connection = mysql.connector.connect(**mysql_config)
+        cursor = connection.cursor()
+        cursor.execute(f'select * from Appointment_Summary where A_ID = "{a_id}";')
+        summary = cursor.fetchone()
+        cursor.close()
+        connection.close()
+
+        return render_template(f"appt_Summary.html", user_type = user_type, user_name = user_name, summary = summary)
+    else:
+        return redirect(f"/login/{user_type}")
+
 @app.route("/logout/<user_type>")
 def logout(user_type):
     if "loggedin" in session:
@@ -91,3 +142,4 @@ if __name__ == "__main__":
 
 #fix alignment of error message in home_doc
 #add buttons to go to other login portals.
+#back button

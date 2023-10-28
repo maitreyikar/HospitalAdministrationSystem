@@ -109,19 +109,21 @@ VALUES
     
 INSERT INTO Scheduled_Appointments (A_ID, P_ID, D_ID, Date, Start_Time, End_Time, Status)
 VALUES
-    ('A001', 'P001', 'D001', '2024-01-15', '08:00:00', '09:00:00', 'Scheduled'),
-    ('A002', 'P005', 'D002', '2022-08-10', '10:00:00', '11:00:00', 'Scheduled'),
-    ('A003', 'P029', 'D003', '2022-07-20', '14:00:00', '15:00:00', 'Scheduled'),
-    ('A004', 'P002', 'D004', '2023-12-05', '09:30:00', '10:30:00', 'Scheduled'),
-    ('A005', 'P003', 'D005', '2024-05-18', '11:30:00', '12:30:00', 'Scheduled');
+    ('A001', 'P001', 'D001', '2022-01-15', '08:00:00', '09:00:00', 'Completed'),
+    ('A002', 'P001', 'D002', '2022-08-10', '10:00:00', '11:00:00', 'Completed'),
+    ('A003', 'P029', 'D003', '2022-07-20', '14:00:00', '15:00:00', 'Completed'),
+    ('A004', 'P001', 'D004', '2023-07-05', '09:30:00', '10:30:00', 'Completed'),
+    ('A005', 'P003', 'D005', '2024-01-08', '11:30:00', '12:30:00', 'Scheduled'),
+    ('A006', 'P001', 'D003', '2024-01-15', '08:00:00', '09:00:00', 'Scheduled'),
+    ('A007', 'P005', 'D002', '2024-03-20', '08:00:00', '09:00:00', 'Scheduled'),
+    ('A008', 'P010', 'D009', '2024-04-02', '08:00:00', '09:00:00', 'Scheduled');
 
 INSERT INTO Appointment_Summary (A_ID, Symptoms, Diagnosis, Prescription)
 VALUES
     ('A001', 'High blood pressure', 'Prescribed medication', 'Medication details'),
     ('A002', 'High sugar levels', 'Prescribed insulin', 'Insulin details'),
     ('A003', 'Breathing difficulties', 'Prescribed inhaler', 'Inhaler details'),
-    ('A004', 'Allergic reaction', 'Prescribed antihistamines', 'Antihistamines details'),
-    ('A005', 'High cholesterol', 'Prescribed statins', 'Statins details');
+    ('A004', 'Allergic reaction', 'Prescribed antihistamines', 'Antihistamines details');
 
 ALTER TABLE Medical_History
 ADD CONSTRAINT FK_MedicalHistory_Patient

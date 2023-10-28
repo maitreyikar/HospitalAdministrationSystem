@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Request Appointment</title>
+        <title>Request Apppointment</title>
         <style>
             html{
                 background: linear-gradient(to bottom right, #39a0ed 0%, #36f1cd 100%);
@@ -59,12 +59,12 @@
     </head>
     <body>
         <div id = "content">
-            <h1>Select a department to begin</h1>
+            <h1>Select Your Doctor</h1>
             <div class="dropdown">
                 <center>
                     <table>
-                        {% for dept in departments %}
-                            <tr><td><center><a href="/home/{{user_type}}/{{user_name}}/requestAppointment/{{dept[0]}}" class="button">{{dept[0]}}</a></center></td></tr>
+                        {% for doc in doctors %}
+                            <tr><td><center><a href="/home/{{user_type}}/{{user_name}}/requestAppointment/{{dept}}/{{doc[0]}}" class="button">{{doc[1]}}</a></center></td></tr>
                         {% endfor %}
                     </table>
                 </center>
