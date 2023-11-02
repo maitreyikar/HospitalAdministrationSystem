@@ -121,6 +121,73 @@ def med_hist(user_type, user_name):
     else:
         return redirect(f"/login/{user_type}")
 
+@app.route("/home/<user_type>/<user_name>/requestedAppointments")
+def req_appt(user_type, user_name):
+    if "loggedin" in session:
+        conn = mysql.connector.connect(**mysql_config)
+        cursor = conn.cursor()
+        if user_type == "receptionist":
+            recep_id = session['id']
+            if recep_id:
+                query = "SELECT * FROM requested_appointment"
+                cursor.execute(query,)
+                requested = cursor.fetchall()
+                conn.close()
+                return render_template("requested_appointment.html",user_type=user_type,user_name=user_name, requested=requested)
+            else:
+                return "Invalid Receptionist ID" 
+        else:
+            return "Invalid user type" 
+    else:
+        return redirect(f"/login/{user_type}")
+
+@app.route("/home/<user_type>/<user_name>/requestedAppointments/fixappt/<d_id>/<p_id>")
+def fix_appointment(user_type, user_name, d_id, p_id):
+    if "loggedin" in session:
+        conn = mysql.connector.connect(**mysql_config)
+        cursor = conn.cursor()
+        if user_type == "receptionist":
+            recep_id = session['id']
+            if recep_id:
+                query = "SELECT P_ID,date,start_time,end_time,status FROM scheduled_appointments WHERE D_ID=%s"
+                cursor.execute(query,(d_id,))
+                doc_schedule = cursor.fetchall()
+                conn.close()
+                return render_template("fixappt.html",doc_schedule=doc_schedule,user_type=user_type,user_name=user_name, d_id=d_id, p_id=p_id)
+            else:
+                return "Invalid Receptionist ID" 
+        else:
+            return "Invalid user type" 
+    else:
+        return redirect(f"/login/{user_type}")
+    
+@app.route("/home/<user_type>/<user_name>/requestedAppointments/fixappt/<d_id>/<p_id>/add_appointment", methods=["POST"])
+def add_appt(user_type, user_name, d_id, p_id):
+    if "loggedin" in session:
+        conn = mysql.connector.connect(**mysql_config)
+        cursor = conn.cursor()
+        if user_type == "receptionist":
+            receptionist_id = session['id']
+            if receptionist_id:
+                if request.method == "POST":
+                    aid = request.form["appointment_id"]
+                    date = request.form["date"]
+                    start_time = request.form["start_time"]
+                    end_time = request.form["end_time"]
+                    status = request.form["status"]
+                    query1 = "Delete from requested_Appointment WHERE D_ID = %s AND P_ID=%s"
+                    cursor.execute(query1, (d_id, p_id))
+                    query2 = "INSERT INTO scheduled_appointments (A_ID, P_ID, D_ID, Date, Start_Time, End_Time, Status) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+                    cursor.execute(query2, (aid, p_id, d_id, date, start_time, end_time, status))
+                    conn.commit()
+                    conn.close()
+                    return redirect(f"/home/{user_type}/{user_name}")
+            else:
+                return "Invalid receptionist ID"
+        else:
+            return "Invalid user type"
+    else:
+        return redirect(f"/login/{user_type}")
 @app.route("/logout/<user_type>")
 def logout(user_type):
     if "loggedin" in session:
