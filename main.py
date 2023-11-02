@@ -50,7 +50,7 @@ def home_pat(user_type, user_name):
     
 @app.route("/home/<user_type>/<user_name>/requestAppointment")
 def requestAppointment(user_type, user_name):
-    if "loggedin" in session:
+    if "loggedin" in session and session['type'] == 'patient':
 
         connection = mysql.connector.connect(**mysql_config)
         cursor = connection.cursor()
@@ -61,11 +61,11 @@ def requestAppointment(user_type, user_name):
 
         return render_template(f"request_appt.html", user_type = user_type, user_name = user_name, departments = departments)
     else:
-        return redirect(f"/login/{user_type}")
+        return redirect(f"/login/patient")
     
 @app.route("/home/<user_type>/<user_name>/requestAppointment/<dept>")
 def reqAppointmentDept(user_type, user_name, dept):
-    if "loggedin" in session:
+    if "loggedin" in session and session['type'] == 'patient':
 
         connection = mysql.connector.connect(**mysql_config)
         cursor = connection.cursor()
@@ -76,12 +76,12 @@ def reqAppointmentDept(user_type, user_name, dept):
 
         return render_template(f"request_appt_dept.html", user_type = user_type, user_name = user_name, dept = dept, doctors = doctors)
     else:
-        return redirect(f"/login/{user_type}")
+        return redirect(f"/login/patient")
     
 
 @app.route("/home/<user_type>/<user_name>/requestAppointment/<dept>/<doc_id>")
 def reqAppointmentDoc(user_type, user_name, dept, doc_id):
-    if "loggedin" in session:
+    if "loggedin" in session and session['type'] == 'patient':
 
         connection = mysql.connector.connect(**mysql_config)
         cursor = connection.cursor()
@@ -92,11 +92,11 @@ def reqAppointmentDoc(user_type, user_name, dept, doc_id):
 
         return redirect(f"/home/patient/{user_name}")
     else:
-        return redirect(f"/login/{user_type}")
+        return redirect(f"/login/patient")
     
 @app.route("/home/<user_type>/<user_name>/appointmentHistory")
 def apptHistory(user_type, user_name):
-    if "loggedin" in session:
+    if "loggedin" in session and session['type'] == 'patient':
 
         connection = mysql.connector.connect(**mysql_config)
         cursor = connection.cursor()
@@ -109,11 +109,11 @@ def apptHistory(user_type, user_name):
 
         return render_template(f"appt_History.html", type = user_type, name = user_name, upcoming = upcoming, past = past)
     else:
-        return redirect(f"/login/{user_type}")
+        return redirect(f"/login/patient")
     
 @app.route("/home/<user_type>/<user_name>/appointmentHistory/<a_id>")
 def apptSummary(user_type, user_name, a_id):
-    if "loggedin" in session:
+    if "loggedin" in session and session['type'] == 'patient':
 
         connection = mysql.connector.connect(**mysql_config)
         cursor = connection.cursor()
@@ -124,7 +124,22 @@ def apptSummary(user_type, user_name, a_id):
 
         return render_template(f"appt_Summary.html", user_type = user_type, user_name = user_name, summary = summary)
     else:
-        return redirect(f"/login/{user_type}")
+        return redirect(f"/login/patient")
+    
+@app.route("/home/<user_type>/<user_name>/scheduledAppointments")
+def scheduled_appt(user_type, user_name):
+    if "loggedin" in session and session['type'] == 'receptionist':
+        connection = mysql.connector.connect(**mysql_config)
+        cursor = connection.cursor()
+        cursor.execute(f'select s.A_ID, p.Name, p.Phone, d.Name, s.Date, s.Start_Time, s.End_Time from patient p join scheduled_appointments s on p.P_ID = s.P_ID join doctor d on d.D_ID = s.D_ID where s.date <  CAST(CURRENT_TIMESTAMP AS DATE) and s.status = "scheduled";')
+        overdue = cursor.fetchall()
+        cursor.execute(f'select s.A_ID, p.Name, p.Phone,  d.Name, s.Date, s.Start_Time, s.End_Time from patient p join scheduled_appointments s on p.P_ID = s.P_ID join doctor d on d.D_ID = s.D_ID where s.date >=  CAST(CURRENT_TIMESTAMP AS DATE) and s.status = "scheduled";')
+        due = cursor.fetchall()
+        cursor.close()
+        connection.close()
+
+        return render_template(f"scheduled_appt.html", user_type = user_type, user_name = user_name, overdue = overdue, due = due)
+
 
 @app.route("/logout/<user_type>")
 def logout(user_type):

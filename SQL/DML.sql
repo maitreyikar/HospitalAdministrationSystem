@@ -1,3 +1,5 @@
+USE dbmsproject;
+
 INSERT INTO Doctor (D_ID, Name, Department, Phone, Email, Password)
 VALUES
     ('D001', 'Dr. Smith', 'Cardiology', '9876543210', 'dr.smith@example.com', 'password1'),
@@ -96,8 +98,7 @@ VALUES
     ('P014', '2022-11-17', 'High Cholesterol', 'Statins', 'Chronic'),
     ('P007', '2022-05-02', 'Hypertension', 'Medication', 'Chronic');
 
-use dbmsproject;
-select * from medical_history;
+
 
 INSERT INTO Requested_Appointment (P_ID, D_ID)
 VALUES
@@ -109,14 +110,19 @@ VALUES
     
 INSERT INTO Scheduled_Appointments (A_ID, P_ID, D_ID, Date, Start_Time, End_Time, Status)
 VALUES
-    ('A001', 'P001', 'D001', '2022-01-15', '08:00:00', '09:00:00', 'Completed'),
-    ('A002', 'P001', 'D002', '2022-08-10', '10:00:00', '11:00:00', 'Completed'),
-    ('A003', 'P029', 'D003', '2022-07-20', '14:00:00', '15:00:00', 'Completed'),
-    ('A004', 'P001', 'D004', '2023-07-05', '09:30:00', '10:30:00', 'Completed'),
-    ('A005', 'P003', 'D005', '2024-01-08', '11:30:00', '12:30:00', 'Scheduled'),
-    ('A006', 'P001', 'D003', '2024-01-15', '08:00:00', '09:00:00', 'Scheduled'),
-    ('A007', 'P005', 'D002', '2024-03-20', '08:00:00', '09:00:00', 'Scheduled'),
-    ('A008', 'P010', 'D009', '2024-04-02', '08:00:00', '09:00:00', 'Scheduled');
+    ('A001', 'P001', 'D001', '2022-01-15', '08:00:00', '08:30:00', 'Completed'),
+    ('A002', 'P001', 'D002', '2022-08-10', '10:00:00', '10:30:00', 'Completed'),
+    ('A003', 'P029', 'D003', '2022-07-20', '14:30:00', '15:00:00', 'Completed'),
+    ('A004', 'P001', 'D004', '2023-07-05', '09:30:00', '10:00:00', 'Completed'),
+    ('A005', 'P003', 'D005', '2023-09-08', '11:30:00', '12:00:00', 'Scheduled'),
+    ('A006', 'P001', 'D003', '2023-10-15', '08:30:00', '09:00:00', 'Scheduled'),
+    ('A007', 'P005', 'D002', '2024-03-20', '09:00:00', '09:30:00', 'Scheduled'),
+    ('A008', 'P010', 'D009', '2024-04-02', '08:30:00', '09:00:00', 'Scheduled'),
+	('A009', 'P011', 'D009', '2024-05-06', '08:30:00', '09:00:00', 'Scheduled'),
+    ('A010', 'P011', 'D009', '2024-05-09', '08:30:00', '09:00:00', 'Scheduled'),
+    ('A011', 'P013', 'D010', '2024-05-12', '11:30:00', '12:00:00', 'Scheduled'),
+    ('A012', 'P006', 'D001', '2024-05-29', '10:30:00', '11:00:00', 'Scheduled');
+
 
 INSERT INTO Appointment_Summary (A_ID, Symptoms, Diagnosis, Prescription)
 VALUES
@@ -124,6 +130,7 @@ VALUES
     ('A002', 'High sugar levels', 'Prescribed insulin', 'Insulin details'),
     ('A003', 'Breathing difficulties', 'Prescribed inhaler', 'Inhaler details'),
     ('A004', 'Allergic reaction', 'Prescribed antihistamines', 'Antihistamines details');
+
 
 ALTER TABLE Medical_History
 ADD CONSTRAINT FK_MedicalHistory_Patient
@@ -154,5 +161,72 @@ REFERENCES Scheduled_Appointments(A_ID)
 ON DELETE CASCADE
 ON UPDATE CASCADE;
 
+
+DELIMITER $$
+CREATE FUNCTION generate_a_id() RETURNS CHAR(5) DETERMINISTIC
+BEGIN
+	DECLARE prev_id VARCHAR(5);
+    DECLARE prev_num INT UNSIGNED;
+    DECLARE new_id VARCHAR(5);
+    DECLARE new_num INT UNSIGNED;
+    
+	SELECT A_ID INTO prev_id FROM Scheduled_Appointments ORDER BY Date DESC LIMIT 1;
+    SET prev_num = SUBSTRING(prev_id, 2);
+    SET prev_num = CAST(prev_num AS UNSIGNED);
+    SET new_num = prev_num + 1;
+    SET new_id = 	CAST(new_num AS CHAR(5));
+    
+    IF new_num > 99 THEN
+		SET new_id = CONCAT("A", new_id);
+	ELSEIF new_num > 9 THEN
+		SET new_id = CONCAT("A0", new_id);
+	ELSE
+		SET new_id = CONCAT("A00", new_id);
+    END IF;
+
+    RETURN new_id;
+END$$
+DELIMITER ;
+
+
+DELIMITER &&
+CREATE TRIGGER check_sched_appt_insert
+BEFORE INSERT ON Scheduled_Appointments 
+FOR EACH ROW
+BEGIN  
+	IF NEW.Date <  CAST(CURRENT_TIMESTAMP AS DATE) THEN    
+		SIGNAL SQLSTATE '45000'    
+		SET MESSAGE_TEXT = 'Invalid date: Cannot be a date that has already passed.';
+        
+	ELSEIF EXISTS(SELECT 1 FROM Scheduled_Appointments S WHERE 
+				NEW.D_ID = S.D_ID AND NEW.Date = S.Date and 
+                ((NEW.Start_Time >= S.Start_Time and 
+                NEW.Start_Time < S.End_Time) or 
+                (NEW.End_Time > S.Start_Time and 
+                NEW.End_Time <= S.End_Time))) THEN
+		SIGNAL SQLSTATE '45000'    
+		SET MESSAGE_TEXT = 'Invalid time: Cannot clash with an already scheduled appointment.';
+        
+	ELSE
+		SET NEW.A_ID := generate_a_id();
+	END IF;
+    
+END&&
+DELIMITER ;
+
+
+DELIMITER &&
+CREATE PROCEDURE schedule_appointment (IN p_id VARCHAR(5), IN  d_id VARCHAR(5), IN date DATE, IN start_time TIME, IN end_time TIME, IN exit_status INT)
+BEGIN
+	DECLARE CONTINUE HANDLER FOR SQLSTATE '45000'
+	BEGIN
+		SET exit_status = -1;
+	END;
+	
+    INSERT INTO Scheduled_Appointments VALUES("A000", p_id, d_id, date, start_time, end_time, "Scheduled");
+    DELETE FROM Requested_Appointment r WHERE r.P_ID = p_id and r.D_ID = d_id;
+    SELECT exit_status;
+END&&
+DELIMITER ;
 
 
