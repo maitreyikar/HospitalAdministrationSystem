@@ -56,6 +56,16 @@
             a{
                 text-decoration: none;
             }
+            input{
+                background-color: #1c78bf;
+                border: none;
+                color: white;
+                padding: 16px 32px;
+                text-decoration: none;
+                margin: 4px 2px;
+                cursor: pointer;
+                border-radius: 5px;
+            }
         </style>
     </head>
     <body>
@@ -71,6 +81,9 @@
                         <tr><td><center><a class="button">Prescription</a></center></td></tr>
                         <tr><td><center><a class="button">{{summary[3]}}</a></center></td></tr>
                     </table>
+                    <form action = "/home/<user_type>/{{user_name}}/appointmentHistory">
+                        <input type = "submit" value = "BACK"/>
+                    </form>
                 </center>
             </div>
         </div>

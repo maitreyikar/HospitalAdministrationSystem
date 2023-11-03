@@ -55,7 +55,28 @@
             a{
                 text-decoration: none;
             }
+            input{
+                background-color: #1c78bf;
+                border: none;
+                color: white;
+                padding: 16px 32px;
+                text-decoration: none;
+                margin: 4px 2px;
+                cursor: pointer;
+                border-radius: 5px;
+            }
         </style>
+
+        <script>
+            window.onload = function(){
+                let status = '{{status}}'
+                if (status == "invalid"){
+                    setTimeout(function(){
+                        alert("You have already created an appointment request for this doctor!")
+                    },500);
+                }
+            }
+        </script>
     </head>
     <body>
         <div id = "content">
@@ -67,6 +88,9 @@
                             <tr><td><center><a href="/home/{{user_type}}/{{user_name}}/requestAppointment/{{dept[0]}}" class="button">{{dept[0]}}</a></center></td></tr>
                         {% endfor %}
                     </table>
+                    <form action = "/home/patient/{{user_name}}/valid">
+                        <input type = "submit" value = "HOME"/>
+                    </form>
                 </center>
             </div>
         </div>

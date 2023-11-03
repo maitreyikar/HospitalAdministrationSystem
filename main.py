@@ -12,6 +12,9 @@ mysql_config = {
    'database': 'dbmsproject' 
 }
 
+@app.route("/")
+def first():
+    return redirect("/login/patient")
 
 @app.route('/login/<user_type>')
 def login(user_type):
@@ -34,22 +37,22 @@ def login(user_type):
             session['loggedin'] = True
             session['id'] = account[0]
             session['type'] = user_type
-            return redirect(f'/home/{user_type}/{account[1]}')
+            return redirect(f'/home/{user_type}/{account[1]}/valid')
         else:
             msg = 'Incorrect username or password.'
 
     return render_template(f"log_{user_type[:3]}.html", msg = msg)
 
 
-@app.route("/home/<user_type>/<user_name>")
-def home_pat(user_type, user_name):
+@app.route("/home/<user_type>/<user_name>/<status>")
+def home_pat(user_type, user_name, status):
     if "loggedin" in session:
-        return render_template(f"home_{user_type[:3]}.html", type = user_type, name = user_name)
+        return render_template(f"home_{user_type[:3]}.html", type = user_type, name = user_name, status = status)
     else:
         return redirect(f"/login/{user_type}")
     
-@app.route("/home/<user_type>/<user_name>/requestAppointment")
-def requestAppointment(user_type, user_name):
+@app.route("/home/<user_type>/<user_name>/requestAppointment/status/<status>")
+def requestAppointment(user_type, user_name, status):
     if "loggedin" in session and session['type'] == 'patient':
 
         connection = mysql.connector.connect(**mysql_config)
@@ -59,7 +62,7 @@ def requestAppointment(user_type, user_name):
         cursor.close()
         connection.close()
 
-        return render_template(f"request_appt.html", user_type = user_type, user_name = user_name, departments = departments)
+        return render_template(f"request_appt.html", user_type = user_type, user_name = user_name, departments = departments, status = status)
     else:
         return redirect(f"/login/patient")
     
@@ -85,12 +88,17 @@ def reqAppointmentDoc(user_type, user_name, dept, doc_id):
 
         connection = mysql.connector.connect(**mysql_config)
         cursor = connection.cursor()
+        cursor.execute(f'select * from Requested_Appointment where P_ID = "{session["id"]}" and D_ID = "{doc_id}";')
+        exists = cursor.fetchall()
+        if len(exists) > 0:
+            return redirect(f"/home/{user_type}/{user_name}/requestAppointment/status/invalid")
+        
         cursor.execute(f'insert into Requested_Appointment value("{session["id"]}", "{doc_id}");')
         connection.commit()
         cursor.close()
         connection.close()
 
-        return redirect(f"/home/patient/{user_name}")
+        return redirect(f"/home/patient/{user_name}/successful")
     else:
         return redirect(f"/login/patient")
     
@@ -131,15 +139,31 @@ def scheduled_appt(user_type, user_name):
     if "loggedin" in session and session['type'] == 'receptionist':
         connection = mysql.connector.connect(**mysql_config)
         cursor = connection.cursor()
-        cursor.execute(f'select s.A_ID, p.Name, p.Phone, d.Name, s.Date, s.Start_Time, s.End_Time from patient p join scheduled_appointments s on p.P_ID = s.P_ID join doctor d on d.D_ID = s.D_ID where s.date <  CAST(CURRENT_TIMESTAMP AS DATE) and s.status = "scheduled";')
+        cursor.execute(f'select s.A_ID, p.Name, p.Phone, d.Name, s.Date, s.Start_Time, s.End_Time from patient p join scheduled_appointments s on p.P_ID = s.P_ID join doctor d on d.D_ID = s.D_ID where s.status = "scheduled" and s.date <  CAST(CURRENT_TIMESTAMP AS DATE) or (s.date =  CAST(CURRENT_TIMESTAMP AS DATE) and s.End_Time < CAST(CURRENT_TIMESTAMP AS TIME));')
         overdue = cursor.fetchall()
-        cursor.execute(f'select s.A_ID, p.Name, p.Phone,  d.Name, s.Date, s.Start_Time, s.End_Time from patient p join scheduled_appointments s on p.P_ID = s.P_ID join doctor d on d.D_ID = s.D_ID where s.date >=  CAST(CURRENT_TIMESTAMP AS DATE) and s.status = "scheduled";')
+        cursor.execute(f'select s.A_ID, p.Name, p.Phone,  d.Name, s.Date, s.Start_Time, s.End_Time from patient p join scheduled_appointments s on p.P_ID = s.P_ID join doctor d on d.D_ID = s.D_ID where s.status = "scheduled" and s.date >  CAST(CURRENT_TIMESTAMP AS DATE) or (s.date =  CAST(CURRENT_TIMESTAMP AS DATE) and s.Start_Time >= CAST(CURRENT_TIMESTAMP AS TIME));')
         due = cursor.fetchall()
         cursor.close()
         connection.close()
 
         return render_template(f"scheduled_appt.html", user_type = user_type, user_name = user_name, overdue = overdue, due = due)
+    else:
+        return redirect(f"/login/receptionist")
 
+@app.route("/home/<user_type>/<user_name>/removeoverdue")
+def remove_overdue(user_type, user_name):
+    if "loggedin" in session and session['type'] == 'receptionist':
+        connection = mysql.connector.connect(**mysql_config)
+        cursor = connection.cursor()
+        cursor.execute("update Scheduled_Appointments set Status = 'Overdue' where Status = 'Scheduled' and Date <  CAST(CURRENT_TIMESTAMP AS DATE) or (Date =  CAST(CURRENT_TIMESTAMP AS DATE) and End_Time < CAST(CURRENT_TIMESTAMP AS TIME));")
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+        return redirect(f"/home/{user_type}/{user_name}/valid")
+    
+    else:
+        return redirect(f"/login/receptionist")
 
 @app.route("/logout/<user_type>")
 def logout(user_type):

@@ -56,6 +56,16 @@
             a{
                 text-decoration: none;
             }
+            input{
+                background-color: #1c78bf;
+                border: none;
+                color: white;
+                padding: 16px 32px;
+                text-decoration: none;
+                margin: 4px 2px;
+                cursor: pointer;
+                border-radius: 5px;
+            }
         </style>
     </head>
     <body>
@@ -63,6 +73,7 @@
             <h1>Upcoming Appointments</h1>
             <div class="dropdown">
                 <center>
+                    {% if upcoming|length > 0 %}
                     <table>
                         <tr>
                             <td><center><a class="button">DOCTOR NAME</a></center></td>
@@ -79,17 +90,24 @@
                             </tr>
                         {% endfor %}
                     </table>
+                    
+                    {% else %}
+                    <h4>No upcoming appointments found.</h4>
+
+                    {% endif %}
                 </center>
             </div>
             <h1>Past Appointments</h1>
             <div class="dropdown">
                 <center>
+                    {% if past|length > 0 %}
                     <table>
                         <tr>
                             <td><center><a class="button">DOCTOR NAME</a></center></td>
                             <td><center><a class="button">DATE</a></center></td>
                             <td><center><a class="button"></a></center></td>
                         </tr>
+                        
                         {% for appt in past %}
                             <tr>
                                 <td><center><a class="button">{{appt[1]}}</a></center></td>
@@ -97,7 +115,16 @@
                                 <td><center><a href = "/home/{{type}}/{{name}}/appointmentHistory/{{appt[0]}}" class="button">Summary</a></center></td>
                             </tr>
                         {% endfor %}
+                        
                     </table>
+
+                    {% else %}
+                    <h4>No past appointments found.</h4>
+
+                    {% endif %}
+                    <form action = "/home/patient/{{name}}/valid">
+                        <input type = "submit" value = "HOME"/>
+                    </form>
                 </center>
             </div>
         </div>

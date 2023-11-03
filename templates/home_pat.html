@@ -47,13 +47,23 @@
             color: white;
         }
     </style>
+    <script>
+        window.onload = function(){
+            let status = '{{status}}'
+            if (status == "successful"){
+                setTimeout(function(){
+                    alert("Appointment request successfully generated!")
+                },500);
+            }
+        }
+    </script>
 </head>
 <body>
     <div id="content">
         <center>
             <h1>Welcome, {{ name }}!</h1>
             <p>Choose an option:</p>
-            <a href="/home/{{type}}/{{name}}/requestAppointment" class="button">Request Appointments</a>
+            <a href="/home/{{type}}/{{name}}/requestAppointment/status/valid" class="button">Request Appointments</a>
             <a href="/home/{{type}}/{{name}}/appointmentHistory" class="button">View Appointment History</a></center><br>
             <a href="/logout/patient" class="button" style="background-color: #1c78bf;">Logout</a>
         </center>

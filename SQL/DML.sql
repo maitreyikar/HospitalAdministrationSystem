@@ -102,11 +102,11 @@ VALUES
 
 INSERT INTO Requested_Appointment (P_ID, D_ID)
 VALUES
-    ('P001', 'D001'),
-    ('P005', 'D002'),
-    ('P029', 'D003'),
+    ('P011', 'D001'),
+    ('P025', 'D002'),
+    ('P009', 'D003'),
     ('P002', 'D004'),
-    ('P003', 'D005');
+    ('P013', 'D005');
     
 INSERT INTO Scheduled_Appointments (A_ID, P_ID, D_ID, Date, Start_Time, End_Time, Status)
 VALUES
