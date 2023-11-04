@@ -162,6 +162,9 @@ ON DELETE CASCADE
 ON UPDATE CASCADE;
 
 
+
+
+-- generates a unique A_ID for every new appointment that is scheduled.
 DELIMITER $$
 CREATE FUNCTION generate_a_id() RETURNS CHAR(5) DETERMINISTIC
 BEGIN
@@ -170,7 +173,7 @@ BEGIN
     DECLARE new_id VARCHAR(5);
     DECLARE new_num INT UNSIGNED;
     
-	SELECT A_ID INTO prev_id FROM Scheduled_Appointments ORDER BY Date DESC LIMIT 1;
+	SELECT A_ID INTO prev_id FROM Scheduled_Appointments ORDER BY A_ID DESC LIMIT 1;
     SET prev_num = SUBSTRING(prev_id, 2);
     SET prev_num = CAST(prev_num AS UNSIGNED);
     SET new_num = prev_num + 1;
@@ -189,14 +192,17 @@ END$$
 DELIMITER ;
 
 
+-- checks validity of date and time of the appointment
+-- date and time should be in the future, not the past
+-- timings should not clash with an already existing appointment
 DELIMITER &&
 CREATE TRIGGER check_sched_appt_insert
 BEFORE INSERT ON Scheduled_Appointments 
 FOR EACH ROW
 BEGIN  
-	IF NEW.Date <  CAST(CURRENT_TIMESTAMP AS DATE) THEN    
+    IF NEW.date <  CAST(CURRENT_TIMESTAMP AS DATE) or (NEW.date =  CAST(CURRENT_TIMESTAMP AS DATE) and NEW.Start_Time < CAST(CURRENT_TIMESTAMP AS TIME)) THEN
 		SIGNAL SQLSTATE '45000'    
-		SET MESSAGE_TEXT = 'Invalid date: Cannot be a date that has already passed.';
+		SET MESSAGE_TEXT = 'Invalid date or time: Cannot be a date or time that has already passed.';
         
 	ELSEIF EXISTS(SELECT 1 FROM Scheduled_Appointments S WHERE 
 				NEW.D_ID = S.D_ID AND NEW.Date = S.Date and 
@@ -205,7 +211,7 @@ BEGIN
                 (NEW.End_Time > S.Start_Time and 
                 NEW.End_Time <= S.End_Time))) THEN
 		SIGNAL SQLSTATE '45000'    
-		SET MESSAGE_TEXT = 'Invalid time: Cannot clash with an already scheduled appointment.';
+		SET MESSAGE_TEXT = 'Invalid date or time: Cannot clash with an already scheduled appointment.';
         
 	ELSE
 		SET NEW.A_ID := generate_a_id();
@@ -215,8 +221,11 @@ END&&
 DELIMITER ;
 
 
+-- Deletes appointment request and inserts it into scheduled appointment
+-- returns 0 if successful
+-- returns -1 if date or time of newly scheduled appointment is invalid
 DELIMITER &&
-CREATE PROCEDURE schedule_appointment (IN p_id VARCHAR(5), IN  d_id VARCHAR(5), IN date DATE, IN start_time TIME, IN end_time TIME, IN exit_status INT)
+CREATE PROCEDURE schedule_appointment (IN p_id VARCHAR(5), IN  d_id VARCHAR(5), IN date DATE, IN start_time TIME, IN end_time TIME, OUT exit_status INT)
 BEGIN
 	DECLARE CONTINUE HANDLER FOR SQLSTATE '45000'
 	BEGIN
@@ -225,8 +234,45 @@ BEGIN
 	
     INSERT INTO Scheduled_Appointments VALUES("A000", p_id, d_id, date, start_time, end_time, "Scheduled");
     DELETE FROM Requested_Appointment r WHERE r.P_ID = p_id and r.D_ID = d_id;
-    SELECT exit_status;
+    
 END&&
 DELIMITER ;
 
 
+
+
+-- checks if new request matches with an already scheduled appointment
+DELIMITER &&
+CREATE TRIGGER check_req_appt_insert
+BEFORE INSERT ON Requested_Appointment
+FOR EACH ROW
+BEGIN  
+	IF EXISTS(SELECT 1 FROM Scheduled_Appointments s where s.Status = "Scheduled" and s.P_ID = NEW.P_ID and s.D_ID = NEW.D_ID) THEN    
+		SIGNAL SQLSTATE '45000'    
+		SET MESSAGE_TEXT = 'Appointment already exists';
+	END IF;
+END&&
+DELIMITER ;
+
+
+-- inserts a new request into requested_appointment
+-- returns 0 if successful
+-- returns -1 if corresponding scheduled appointment already exists
+-- returns -2 if corresponding request already exists (primary key error)
+DELIMITER &&
+CREATE PROCEDURE request_appointment (IN p_id VARCHAR(5), IN  d_id VARCHAR(5), OUT exit_status INT)
+BEGIN
+	DECLARE CONTINUE HANDLER FOR SQLSTATE '45000'
+	BEGIN
+		SET exit_status = -1;
+	END;
+    
+    DECLARE CONTINUE HANDLER FOR 1062
+    BEGIN
+		SET exit_status = -2;
+    END;
+	
+    INSERT INTO Requested_Appointment VALUES(p_id, d_id);
+    
+END&&
+DELIMITER ;

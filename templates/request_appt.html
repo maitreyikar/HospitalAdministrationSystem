@@ -70,9 +70,14 @@
         <script>
             window.onload = function(){
                 let status = '{{status}}'
-                if (status == "invalid"){
+                if (status == "requestexists"){
                     setTimeout(function(){
-                        alert("You have already created an appointment request for this doctor!")
+                        alert("You have already submitted an appointment request for this doctor!")
+                    },500);
+                }
+                else if (status == "appointmentexists"){
+                    setTimeout(function(){
+                        alert("You already have an appointment scheduled for this doctor!")
                     },500);
                 }
             }

@@ -88,12 +88,14 @@ def reqAppointmentDoc(user_type, user_name, dept, doc_id):
 
         connection = mysql.connector.connect(**mysql_config)
         cursor = connection.cursor()
-        cursor.execute(f'select * from Requested_Appointment where P_ID = "{session["id"]}" and D_ID = "{doc_id}";')
-        exists = cursor.fetchall()
-        if len(exists) > 0:
-            return redirect(f"/home/{user_type}/{user_name}/requestAppointment/status/invalid")
+
+        exit_status = cursor.callproc("request_appointment", args = (session['id'], doc_id, 0))
         
-        cursor.execute(f'insert into Requested_Appointment value("{session["id"]}", "{doc_id}");')
+        if exit_status[2] == -1:
+            return redirect(f"/home/{user_type}/{user_name}/requestAppointment/status/appointmentexists")
+        elif exit_status[2] == -2:
+            return redirect(f"/home/{user_type}/{user_name}/requestAppointment/status/requestexists")
+        
         connection.commit()
         cursor.close()
         connection.close()
@@ -178,6 +180,9 @@ if __name__ == "__main__":
     print("Server up and running at port 5000")
 
 
+
+## URGENT: requested appointment should not have a corresponding value in scheduled_appointments with status scheduled.
+# maybe use a trigger and a procedure, like with scheduling appt.
 
 #fix alignment of error message in home_doc
 #add buttons to go to other login portals.

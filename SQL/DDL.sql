@@ -1,5 +1,5 @@
--- drop database dbmsproject;
--- create database dbmsproject;
+drop database dbmsproject;
+create database dbmsproject;
 use dbmsproject;
 CREATE TABLE Doctor (
     D_ID VARCHAR(5) PRIMARY KEY,
