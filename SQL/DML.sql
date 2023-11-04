@@ -220,21 +220,21 @@ BEGIN
 END&&
 DELIMITER ;
 
-
 -- Deletes appointment request and inserts it into scheduled appointment
 -- returns 0 if successful
 -- returns -1 if date or time of newly scheduled appointment is invalid
 DELIMITER &&
 CREATE PROCEDURE schedule_appointment (IN p_id VARCHAR(5), IN  d_id VARCHAR(5), IN date DATE, IN start_time TIME, IN end_time TIME, OUT exit_status INT)
 BEGIN
-	DECLARE CONTINUE HANDLER FOR SQLSTATE '45000'
+	DECLARE EXIT HANDLER FOR SQLSTATE '45000'
 	BEGIN
 		SET exit_status = -1;
 	END;
 	
     INSERT INTO Scheduled_Appointments VALUES("A000", p_id, d_id, date, start_time, end_time, "Scheduled");
     DELETE FROM Requested_Appointment r WHERE r.P_ID = p_id and r.D_ID = d_id;
-    
+	SET exit_status = 0;
+
 END&&
 DELIMITER ;
 
@@ -254,7 +254,7 @@ BEGIN
 END&&
 DELIMITER ;
 
-
+drop procedure request_appointment;
 -- inserts a new request into requested_appointment
 -- returns 0 if successful
 -- returns -1 if corresponding scheduled appointment already exists
@@ -262,17 +262,18 @@ DELIMITER ;
 DELIMITER &&
 CREATE PROCEDURE request_appointment (IN p_id VARCHAR(5), IN  d_id VARCHAR(5), OUT exit_status INT)
 BEGIN
-	DECLARE CONTINUE HANDLER FOR SQLSTATE '45000'
+	DECLARE EXIT HANDLER FOR SQLSTATE '45000'
 	BEGIN
 		SET exit_status = -1;
 	END;
     
-    DECLARE CONTINUE HANDLER FOR 1062
+    DECLARE EXIT HANDLER FOR 1062
     BEGIN
 		SET exit_status = -2;
     END;
 	
     INSERT INTO Requested_Appointment VALUES(p_id, d_id);
+    SET exit_status = 0;
     
 END&&
 DELIMITER ;

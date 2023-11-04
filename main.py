@@ -90,7 +90,7 @@ def reqAppointmentDoc(user_type, user_name, dept, doc_id):
         cursor = connection.cursor()
 
         exit_status = cursor.callproc("request_appointment", args = (session['id'], doc_id, 0))
-        
+        print(exit_status)
         if exit_status[2] == -1:
             return redirect(f"/home/{user_type}/{user_name}/requestAppointment/status/appointmentexists")
         elif exit_status[2] == -2:
