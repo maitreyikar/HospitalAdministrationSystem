@@ -10,10 +10,9 @@
             text-align: center;
             padding: 20px;
             border-radius: 10px;
-            margin-bottom: 20px; /* Add margin to create space between divs */
+            margin-bottom: 20px;
         }
 
-        /* Your existing CSS styles for the rest of the document */
         html {
             background: linear-gradient(to bottom right, #39a0ed 0%, #36f1cd 100%);
             font-size: 2ch;
@@ -35,6 +34,9 @@
             border-radius: 10px;
             cursor: pointer;
             margin: 10px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+
         }
         .button-view-history {
             display: inline-block;
@@ -53,7 +55,8 @@
         }
         th, td {
             padding: 10px;
-            text-align: left;
+            text-align: center;
+
         }
         th {
             background-color: #4CAF50;
@@ -62,13 +65,38 @@
         tr:nth-child(even) {
             background-color: #f2f2f2;
         }
+        .input-container label {
+            color: white; 
+        }
         tr:nth-child(odd) {
             color: white;
         }
         h1 {
             color: white;
         }
+        label{
+            color: white;
+        }
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-radius: 10px;
+            margin: 10px 0; /* Add margin for spacing between input fields */
+        }
+
+        .input-container label {
+            color: white;
+        }
+
+        .input-container input {
+            width: 40%;
+            padding: 10px;
+            margin: 5px 0;
+        }
+
     </style>
+
 </head>
 <body>
     <div class="content" id="content">
@@ -91,35 +119,51 @@
             </tr>
             {% endfor %}
         </table>
-        <a href="/home/{{ user_type }}/{{ user_name }}/requestedAppointments" class="button">Back to Dashboard</a>
+        <a href="/home/{{ user_type }}/{{ user_name }}/requestedAppointments" class="button" style="background-color: #a35145;">Back to Dashboard</a>
     </div>
 
     <div class="content" id="content2">
         <h1>Appointment Details</h1>
         <form action="/home/{{user_type}}/{{user_name}}/requestedAppointments/fixappt/{{d_id}}/{{p_id}}/add_appointment" method="POST">
-            <label for="doctor_id">Doctor ID:</label>
-            <input type="text" id="doctor_id" name="doctor_id" value="{{ d_id }}" readonly><br><br>
+            <div class="input-container">
+                <label for="doctor_id">Doctor ID</label>
+                <input type="text" id="doctor_id" name="doctor_id" value="{{ d_id }}" readonly>
+            </div>
     
-            <label for="patient_id">Patient ID:</label>
-            <input type text" id="patient_id" name="patient_id" value="{{ p_id }}" readonly><br><br>
+            <div class="input-container">
+                <label for="patient_id">Patient ID</label>
+                <input type="text" id="patient_id" name="patient_id" value="{{ p_id }}" readonly>
+            </div>
     
-            <label for="appointment_id">Appointment ID:</label>
-            <input type="text" id="appointment_id" name="appointment_id" required><br><br>
+            <div class="input-container">
+                <label for="date">Date</label>
+                <input type="text" id="date" name="date" pattern="\d{4}/\d{2}/\d{2}" placeholder="yyyy-mm-dd" required>
+            </div>
     
-            <label for="date">Date (yyyy/mm/dd):</label>
-            <input type="text" id="date" name="date" pattern="\d{4}/\d{2}/\d{2}" placeholder="yyyy/mm/dd" required><br><br>
+            <div class="input-container">
+                <label for="start_time">Start Time</label>
+                <input type="text" id="start_time" name="start_time" pattern="\d{2}:\d{2}:\d{2}" placeholder="hh:mm:ss" required>
+            </div>
     
-            <label for="start_time">Start Time (hh:mm:ss):</label>
-            <input type="text" id="start_time" name="start_time" pattern="\d{2}:\d{2}:\d{2}" placeholder="hh:mm:ss" required><br><br>
-    
-            <label for="end_time">End Time (hh:mm:ss):</label>
-            <input type="text" id="end_time" name="end_time" pattern="\d{2}:\d{2}:\d{2}" placeholder="hh:mm:ss" required><br><br>
-    
-            <label for="status">Status:</label>
-            <input type="text" id="status" name="status" value="Scheduled" readonly><br><br>
+            <div class="input-container">
+                <label for="end_time">End Time</label>
+                <input type="text" id="end_time" name="end_time" pattern="\d{2}:\d{2}:\d{2}" placeholder="hh:mm:ss" required>
+            </div>
     
             <input type="submit" value="Add Appointment" class="button">
         </form>
+        {% if error %}
+        <script>
+            alert("Invalid Date or Clashing Time: {{ error }}");
+        </script>
+        <button onclick="retryOperation()">Retry</button>
+        {% endif %}
     </div>
+    <script>
+        function retryOperation() {
+            location.reload();
+        }
+    </script>
+    
 </body>
 </html>

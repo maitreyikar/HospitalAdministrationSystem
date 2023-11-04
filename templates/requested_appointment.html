@@ -31,6 +31,9 @@
             border-radius: 10px;
             cursor: pointer;
             margin: 10px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+
         }
         .button-view-history {
             display: inline-block;
@@ -46,10 +49,13 @@
             width: 100%;
             margin-top: 20px;
             border-collapse: collapse;
+            border-radius: 10px;
+            
         }
         th, td {
             padding: 10px;
-            text-align: left;
+            text-align: center;
+            
         }
         th {
             background-color: #4CAF50;
@@ -63,6 +69,7 @@
         }
         h1 {
             color: white;
+            
         }
     </style>
 </head>
@@ -84,7 +91,7 @@
             </tr>
             {% endfor %}
         </table>
-        <a href="/home/{{ user_type }}/{{ user_name }}" class="button">Back to Dashboard</a>
+        <a href="/home/{{ user_type }}/{{ user_name }}" class="button" style="background-color: #a35145;">Back to Dashboard</a>
     </div>
     
 </body>

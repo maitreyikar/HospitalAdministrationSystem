@@ -161,6 +161,12 @@ def fix_appointment(user_type, user_name, d_id, p_id):
     else:
         return redirect(f"/login/{user_type}")
     
+import mysql.connector
+
+from flask import request, redirect, render_template, url_for
+
+from flask import request, redirect, render_template, url_for
+
 @app.route("/home/<user_type>/<user_name>/requestedAppointments/fixappt/<d_id>/<p_id>/add_appointment", methods=["POST"])
 def add_appt(user_type, user_name, d_id, p_id):
     if "loggedin" in session:
@@ -170,24 +176,35 @@ def add_appt(user_type, user_name, d_id, p_id):
             receptionist_id = session['id']
             if receptionist_id:
                 if request.method == "POST":
-                    aid = request.form["appointment_id"]
-                    date = request.form["date"]
-                    start_time = request.form["start_time"]
-                    end_time = request.form["end_time"]
-                    status = request.form["status"]
-                    query1 = "Delete from requested_Appointment WHERE D_ID = %s AND P_ID=%s"
-                    cursor.execute(query1, (d_id, p_id))
-                    query2 = "INSERT INTO scheduled_appointments (A_ID, P_ID, D_ID, Date, Start_Time, End_Time, Status) VALUES (%s, %s, %s, %s, %s, %s, %s)"
-                    cursor.execute(query2, (aid, p_id, d_id, date, start_time, end_time, status))
-                    conn.commit()
-                    conn.close()
-                    return redirect(f"/home/{user_type}/{user_name}")
+                    try:
+                        cursor.execute('SELECT generate_a_id()')
+                        aid = cursor.fetchone()[0]
+                        date = request.form["date"]
+                        start_time = request.form["start_time"]
+                        end_time = request.form["end_time"]
+                        query = "SELECT P_ID,date,start_time,end_time,status FROM scheduled_appointments WHERE D_ID=%s"
+                        cursor.execute(query,(d_id,))
+                        doc_schedule = cursor.fetchall()
+                        query1 = "Delete from requested_Appointment WHERE D_ID = %s AND P_ID=%s"
+                        cursor.execute(query1, (d_id, p_id))
+                        query2 = "INSERT INTO scheduled_appointments (A_ID, P_ID, D_ID, Date, Start_Time, End_Time, Status) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+                        cursor.execute(query2, (aid, p_id, d_id, date, start_time, end_time, "Scheduled"))
+                        conn.commit()
+                        conn.close()
+                        return redirect(f"/home/{user_type}/{user_name}")
+                    except mysql.connector.Error as e:
+                        error_message = str(e)
+                        return render_template("fixappt.html", doc_schedule=doc_schedule, user_type=user_type, user_name=user_name, d_id=d_id, p_id=p_id, error=error_message)
             else:
                 return "Invalid receptionist ID"
         else:
             return "Invalid user type"
     else:
         return redirect(f"/login/{user_type}")
+
+
+
+
 @app.route("/logout/<user_type>")
 def logout(user_type):
     if "loggedin" in session:

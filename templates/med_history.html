@@ -31,6 +31,9 @@
             border-radius: 10px;
             cursor: pointer;
             margin: 10px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+
         }
         .button-view-history {
             display: inline-block;
@@ -49,7 +52,7 @@
         }
         th, td {
             padding: 10px;
-            text-align: left;
+            text-align: center;
         }
         th {
             background-color: #4CAF50;
@@ -71,7 +74,7 @@
         <h1> Medical history</h1>
         <form action="/home/{{user_type}}/{{user_name}}/patientMedicalHistory" method="GET">
             <input type="text" name="ptid" max="40" placeholder="P_ID"/> <br><br>
-            <input type="submit", id="sub-button"/>
+            <input type="submit", id="sub-button" class="button" style="background-color: #33be31;"/>
         </form>
         <table>
             <tr>
@@ -92,6 +95,7 @@
             </tr>
             {% endfor %}
         </table>
+        <a href="/home/{{ user_type }}/{{ user_name }}" class="button" style="background-color: #a35145;">Back</a>
     </div>
 </body>
 </html>
