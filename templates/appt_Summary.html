@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Request Appointment</title>
+        <title>Appointment Summary</title>
         <style>
             html{
                 background: linear-gradient(to bottom right, #39a0ed 0%, #36f1cd 100%);
@@ -42,8 +42,9 @@
                 margin: 5px;
             }
             table {
-                width: 40%;
+                width: 50%;
                 margin-top: 20px;
+                margin-bottom: 40px;
                 border-collapse: collapse;
             }
             td{
@@ -66,35 +67,22 @@
                 border-radius: 5px;
             }
         </style>
-
-        <script>
-            window.onload = function(){
-                let status = '{{status}}'
-                if (status == "requestexists"){
-                    setTimeout(function(){
-                        alert("You have already submitted an appointment request for this doctor!")
-                    },500);
-                }
-                else if (status == "appointmentexists"){
-                    setTimeout(function(){
-                        alert("You already have an appointment scheduled for this doctor!")
-                    },500);
-                }
-            }
-        </script>
     </head>
     <body>
         <div id = "content">
-            <h1>Select a department to begin</h1>
+            <h1>Summary for Appointment {{summary[0]}}</h1>
             <div class="dropdown">
                 <center>
                     <table>
-                        {% for dept in departments %}
-                            <tr><td><center><a href="/home/{{user_type}}/{{user_name}}/requestAppointment/{{dept[0]}}" class="button">{{dept[0]}}</a></center></td></tr>
-                        {% endfor %}
+                        <tr><td><center><a class="button">Symptoms</a></center></td></tr>
+                        <tr><td><center><a class="button">{{summary[1]}}</a></center></td></tr>
+                        <tr><td><center><a class="button">Diagnosis</a></center></td></tr>
+                        <tr><td><center><a class="button">{{summary[2]}}</a></center></td></tr>
+                        <tr><td><center><a class="button">Prescription</a></center></td></tr>
+                        <tr><td><center><a class="button">{{summary[3]}}</a></center></td></tr>
                     </table>
-                    <form action = "/home/patient/{{user_name}}/valid">
-                        <input type = "submit" value = "HOME"/>
+                    <form action = "/home/<user_type>/{{user_name}}/appointmentHistory">
+                        <input type = "submit" value = "BACK"/>
                     </form>
                 </center>
             </div>

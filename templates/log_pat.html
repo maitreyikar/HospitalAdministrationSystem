@@ -3,15 +3,10 @@
         <title>Login</title>
         <style>
             #contains-form{
-                /*posit25ion: absolute;*/
-                /*top: 50%;
-                left: 50%;*/
                 width: 400px;
                 padding: 25px 35px 25px 35px;
-                /*transform: translate(-50%, -50%);*/
                 background: rgba(39, 31, 82, 0.484);
                 box-sizing: border-box;
-                /*box-shadow: 0 15px 25px rgb(0,0,0,0.6);*/
                 border-radius: 10px 0px 0px 10px;
                 color: white;
             } 
@@ -79,19 +74,21 @@
     </head>
     <body>
         <div id = "content">
-            <div id="contains-form">
-                <h1>Login to Patient Services</h1>
-                <div id = "msg">{{msg}}</div>
-                <form action="/login/patient" method = "GET">
-                    <input type="text" name="username" max="40" placeholder="Username"/> <br><br>
-                    <input type="password" name="password" max="40" placeholder="Password"/> <br><br>
-                    <input type="submit", id="sub-button"/>
-                </form>
-            </div>
-            <div id = "options">
-                <form action = "/register"><input type = "submit" value = "New here? Register yourself as a patient" /></form>
-                <form action = "/login/receptionist"><input type = "submit" value = "Login as a receptionist" /></form>
-                <form action = "/login/doctor"><input type = "submit" value = "Login as a doctor" /></form> 
+            <div style="box-shadow: 0 10px 20px rgb(0,0,0,0.6); display: flex; flex-direction: row; border-radius: 10px;">
+                <div id="contains-form">
+                    <h1>Login to Patient Services</h1>
+                    <div id = "msg">{{msg}}</div>
+                    <form action="/login/patient" method = "GET">
+                        <input type="text" name="username" max="40" placeholder="Username"/> <br><br>
+                        <input type="password" name="password" max="40" placeholder="Password"/> <br><br>
+                        <input type="submit", id="sub-button"/>
+                    </form>
+                </div>
+                <div id = "options">
+                    <!--<form action = "/register"><input type = "submit" value = "New here? Register yourself as a patient" /></form>-->
+                    <form action = "/login/receptionist"><input type = "submit" value = "Login as a receptionist" /></form>
+                    <form action = "/login/doctor"><input type = "submit" value = "Login as a doctor" /></form> 
+                </div>
             </div>
         </div>
     </body>

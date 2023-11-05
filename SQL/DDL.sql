@@ -41,7 +41,7 @@ CREATE TABLE Receptionist (
     Password VARCHAR(255)
 );
 CREATE TABLE Scheduled_Appointments (
-    A_ID VARCHAR(5) PRIMARY KEY,
+    A_ID CHAR(5) PRIMARY KEY,
     P_ID VARCHAR(5),
     D_ID VARCHAR(5),
     Date DATE,
@@ -50,7 +50,7 @@ CREATE TABLE Scheduled_Appointments (
     Status VARCHAR(20)
 );
 CREATE TABLE Appointment_Summary (
-    A_ID VARCHAR(5) PRIMARY KEY,
+    A_ID CHAR(5) PRIMARY KEY,
 	Symptoms TEXT,
     Diagnosis TEXT,
     Prescription TEXT
