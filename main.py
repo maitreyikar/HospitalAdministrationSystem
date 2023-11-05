@@ -7,11 +7,13 @@ app.secret_key = 'sjhuefbyuUGgyt3874'
 mysql_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'MacbookAirm1',
+    #'password': 'MacbookAirm1',
+    'password': 'maitreyi@1304',
     'database': 'dbmsproject'
 }
 
 @app.route("/")
+@app.route("/login")
 def first():
     return redirect("/login/patient")
 
