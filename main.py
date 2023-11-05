@@ -92,7 +92,7 @@ def submit(user_type, user_name, aid):
                     cursor.execute(query2, (aid, symptoms, diagnosis, prescription))
                     conn.commit()
                     conn.close()
-                    return redirect(f"/home/{user_type}/{user_name}")
+                    return redirect(f"/home/{user_type}/{user_name}/valid")
             else:
                 return "Invalid doctor ID"
         else:
@@ -178,7 +178,7 @@ def add_appt(user_type, user_name, d_id, p_id):
                     if exit_status[5] == None:
                         conn.commit()
                         conn.close()
-                        return redirect(f"/home/{user_type}/{user_name}")
+                        return redirect(f"/home/{user_type}/{user_name}/valid")
                     elif exit_status[5] == -1:
                         return render_template("fixappt.html", doc_schedule=doc_schedule, user_type=user_type, user_name=user_name, d_id=d_id, p_id=p_id, error="error")
             else:
