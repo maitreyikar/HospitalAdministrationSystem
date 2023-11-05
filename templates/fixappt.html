@@ -152,18 +152,18 @@
     
             <input type="submit" value="Add Appointment" class="button">
         </form>
-        {% if error %}
-        <script>
-            alert("Invalid Date or Clashing Time: {{ error }}");
-        </script>
-        <button onclick="retryOperation()">Retry</button>
-        {% endif %}
     </div>
     <script>
-        function retryOperation() {
-            location.reload();
+        window.onload = function(){
+            let error = '{{error}}'
+            if (error == "error"){
+                setTimeout(function(){
+                    alert("Invalid date or time: Cannot be a date or time that has already passed or clashes with an existing appointment.");
+                    window.location.href = "/home/{{user_type}}/{{user_name}}/requestedAppointments/fixappt/{{d_id}}/{{p_id}}";
+                }, 500);
+            }
         }
-    </script>
+    </script>    
     
 </body>
 </html>
