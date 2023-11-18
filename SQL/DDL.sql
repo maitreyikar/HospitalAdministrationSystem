@@ -11,7 +11,6 @@ CREATE TABLE Doctor (
 );
 CREATE TABLE Medical_History (
     P_ID VARCHAR(5),
-    D_ID VARCHAR(5),
     Date DATE,
     Health_Condition VARCHAR(20),
     Treatment VARCHAR(20),
